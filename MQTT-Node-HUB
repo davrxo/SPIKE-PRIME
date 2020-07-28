@@ -1,0 +1,57 @@
+var arrayData = new Array();
+var archivoTxt = arrayData;
+var fileRuta = 'Front.txt';
+var dataSum= 0;
+archivoTxt.open("GET",fileRuta,false);
+archivoTxt.send(null);
+var txt = archivoTxt.responseText;
+for (var i=0; i<txt.length;i++){
+  arrayData.push(txt[i]);
+}
+arrayData.forEach(function(data){
+  console.log(data);
+  dataSum+=parseInt(data);
+});
+
+
+let BrokerMQTT = 'mqtt://broker.shiftr.io';
+let PuertoMQTT = 1883;
+let ClienteIDMQTT = "MQTT-Nodejs";
+let UsuarioMQTT = "davrxodavrxo";
+let ContrasenaMQTT = "cheking38";
+
+const SerialPort = require('serialport');
+const port = new SerialPort("COM3", {
+  baudRate: 9600
+})
+
+let Opciones = {
+  port: PuertoMQTT,
+  clientId: ClienteIDMQTT,
+  username: UsuarioMQTT,
+  password: ContrasenaMQTT
+}
+
+var mqtt = require('mqtt')
+var client = mqtt.connect(BrokerMQTT, Opciones);
+
+client.on('connect', function() {
+  client.subscribe('/davrxo/Clasificar', function(err) {
+    console.log("MQTT Activado")
+  })
+})
+
+
+client.on('message', function(topic, message) {
+  let Mensaje = message.toString();
+  if (Mensaje == "Avanzar") {
+    console.log("Avanzar");
+    port.write("./Front.txt");}
+  if (Mensaje == "Atras") {
+    console.log("Atras");
+    port.write("H");
+  } else if (Mensaje == "Nada") {
+    console.log("Stop");
+    port.write("S");
+  }
+})
